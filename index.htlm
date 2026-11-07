@@ -1,0 +1,350 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PrimeVault - Ofertas y Tecnología</title>
+    <style>
+        :root {
+            --bg-color: #0f172a;
+            --card-bg: #1e293b;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent: #f59e0b;
+            --accent-hover: #d97706;
+            --admin-bg: #111827;
+            --border: #334155;
+        }
+ 
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-main);
+            margin: 0;
+            padding: 0;
+        }
+ 
+        header {
+            background-color: var(--card-bg);
+            padding: 1rem 2rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--border);
+        }
+ 
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent);
+        }
+ 
+        nav button {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-main);
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-left: 0.5rem;
+        }
+ 
+        nav button.active {
+            background-color: var(--accent);
+            color: #000;
+            border-color: var(--accent);
+        }
+ 
+        .admin-toggle {
+            background: #3b82f6 !important;
+            color: #fff !important;
+            border: none !important;
+        }
+ 
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+ 
+        /* Panel de Administración */
+        .admin-panel {
+            background-color: var(--admin-bg);
+            border: 2px dashed var(--accent);
+            border-radius: 8px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            display: none;
+        }
+ 
+        .admin-panel.open {
+            display: block;
+        }
+ 
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1rem;
+        }
+ 
+        .form-group {
+            display: flex;
+            flex-direction: column;
+        }
+ 
+        .form-group label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 0.3rem;
+        }
+ 
+        .form-group input, .form-group select, .form-group textarea {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border);
+            color: #fff;
+            padding: 0.6rem;
+            border-radius: 4px;
+        }
+ 
+        .btn-submit {
+            background-color: var(--accent);
+            color: #000;
+            font-weight: bold;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            margin-top: 1rem;
+            width: 100%;
+        }
+ 
+        /* Grid de Productos */
+        .products-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+        }
+ 
+        .card {
+            background-color: var(--card-bg);
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+ 
+        .card-media {
+            width: 100%;
+            height: 220px;
+            object-fit: cover;
+            background-color: #000;
+        }
+ 
+        .card-body {
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            flex-grow: 1;
+        }
+ 
+        .badge {
+            align-self: flex-start;
+            background-color: var(--accent);
+            color: #000;
+            font-size: 0.75rem;
+            font-weight: bold;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            margin-bottom: 0.5rem;
+        }
+ 
+        .card-title {
+            font-size: 1.1rem;
+            margin: 0 0 0.5rem 0;
+        }
+ 
+        .card-desc {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+ 
+        .price-box {
+            display: flex;
+            align-items: baseline;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+ 
+        .price {
+            font-size: 1.4rem;
+            font-weight: bold;
+            color: #4ade80;
+        }
+ 
+        .original-price {
+            font-size: 0.9rem;
+            text-decoration: line-through;
+            color: var(--text-muted);
+        }
+ 
+        .btn-buy {
+            background-color: var(--accent);
+            color: #000;
+            text-align: center;
+            text-decoration: none;
+            font-weight: bold;
+            padding: 0.7rem;
+            border-radius: 6px;
+            display: block;
+        }
+ 
+        .btn-delete {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(239, 68, 68, 0.9);
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 28px;
+            height: 28px;
+            cursor: pointer;
+            display: none;
+        }
+ 
+        .admin-mode .btn-delete {
+            display: block;
+        }
+    </style>
+</head>
+<body>
+ 
+    <header>
+        <div class="logo">PrimeVault</div>
+        <nav>
+            <button onclick="filterCategory('all')" class="active">Todos</button>
+            <button onclick="filterCategory('tech')">Tecnología</button>
+            <button onclick="filterCategory('home')">Hogar</button>
+            <button class="admin-toggle" onclick="toggleAdmin()">⚙️ Panel Admin</button>
+        </nav>
+    </header>
+ 
+    <div class="container">
+ 
+        <!-- Formulario Administrador -->
+        <div class="admin-panel" id="adminPanel">
+            <h3> Añadir Nuevo Producto / Oferta</h3>
+            <div class="form-grid">
+                <div class="form-group">
+                    <label>Título del Producto</label>
+                    <input type="text" id="prodTitle" placeholder="Ej: Xiaomi 17T Pro">
+                </div>
+                <div class="form-group">
+                    <label>Categoría</label>
+                    <select id="prodCategory">
+                        <option value="tech">Tecnología</option>
+                        <option value="home">Hogar</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>ASIN o Enlace Amazon</label>
+                    <input type="text" id="prodAsin" placeholder="Ej: B0GS68M4MB">
+                </div>
+                <div class="form-group">
+                    <label>Precio Oferta (€)</label>
+                    <input type="number" step="0.01" id="prodPrice" placeholder="508.97">
+                </div>
+                <div class="form-group">
+                    <label>Precio Original (€)</label>
+                    <input type="number" step="0.01" id="prodOriginal" placeholder="599.99">
+                </div>
+                <div class="form-group">
+                    <label>Etiqueta (Badge)</label>
+                    <input type="text" id="prodBadge" placeholder="Ej: Oferta Flash">
+                </div>
+                <div class="form-group">
+                    <label>Enlace de Imagen o Vídeo</label>
+                    <input type="text" id="prodMedia" placeholder="URL de la imagen o vídeo (.mp4)">
+                </div>
+                <div class="form-group">
+                    <label>¿Es un vídeo?</label>
+                    <select id="prodIsVideo">
+                        <option value="false">No (Es Imagen)</option>
+                        <option value="true">Sí (Es Vídeo MP4)</option>
+                    </select>
+                </div>
+            </div>
+            <div class="form-group" style="margin-top: 1rem;">
+                <label>Descripción corta</label>
+                <textarea id="prodDesc" rows="2" placeholder="Detalles del producto..."></textarea>
+            </div>
+            <button class="btn-submit" onclick="addProduct()"> Guardar y Mostrar en la Web</button>
+        </div>
+ 
+        <!-- Rejilla de Productos -->
+        <div class="products-grid" id="productsGrid"></div>
+ 
+    </div>
+ 
+    <script>
+        // CONFIGURACIÓN DE TU TAG DE AFILIADO
+        const MY_AFFILIATE_TAG = "alex12su-21"; // Sustituye si usas otro ID
+ 
+        // Cargar productos guardados o por defecto
+        let defaultProducts = [
+            {
+                id: 1,
+                title: "Smartphone Xiaomi 17T Pro (256 GB, Azul)",
+                category: "tech",
+                asin: "B0GS68M4MB",
+                price: 508.97,
+                originalPrice: 599.99,
+                badge: "Oferta Flash",
+                media: "https://m.media-amazon.com/images/I/71xyz...jpg",
+                isVideo: false,
+                description: "Xiaomi 17T con pantalla de alta tasa de refresco y cámara profesional."
+            }
+        ];
+ 
+        let products = JSON.parse(localStorage.getItem('pv_products')) || defaultProducts;
+        let currentCategory = 'all';
+ 
+        function renderProducts() {
+            const grid = document.getElementById('productsGrid');
+            grid.innerHTML = '';
+ 
+            const filtered = currentCategory === 'all' 
+                ? products 
+                : products.filter(p => p.category === currentCategory);
+ 
+            filtered.forEach(p => {
+                const buyUrl = p.asin.startsWith('http') 
+                    ? p.asin 
+                    : `https://www.amazon.es/dp/${p.asin}?tag=${MY_AFFILIATE_TAG}`;
+ 
+                const mediaElement = p.isVideo 
+                    ? `<video class="card-media" controls><source src="${p.media}" type="video/mp4"></video>`
+                    : `<img class="card-media" src="${p.media}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/300x220?text=Sin+Imagen'">`;
+ 
+                const cardHtml = `
+                    <div class="card">
+                        <button class="btn-delete" onclick="deleteProduct(${p.id})">✕</button>
+                        ${mediaElement}
+                        <div class="card-body">
+                            ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
+                            <h3 class="card-title">${p.title}</h3>
+                            <p class="card-desc">${p.description}</p>
+                            <div class="price-box">
+                                <span class="price">${p.price} €</span>
+                                ${p.originalPrice ? `<span class="original-price">${p.originalPrice} €</span>` : ''}
+                            </div>
+                            <a href="${buyUrl}" target="_blank" class="btn-buy">Ver en Amazon</a>
+                        </div>
+                    </div>
+                `;
+                grid.innerHTML += 
+ 
