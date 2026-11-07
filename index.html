@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>DealsHub - Mejores Ofertas y Descuentos en Amazon</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    body { font-family: 'Inter', sans-serif; }
+    .amazon-btn {
+      background: linear-gradient(180deg, #FFD814 0%, #F7CA00 100%);
+      border: 1px solid #FCD200;
+    }
+    .amazon-btn:hover {
+      background: linear-gradient(180deg, #F7CA00 0%, #F0B800 100%);
+    }
+    .badge-discount {
+      background-color: #CC0C39;
+    }
+  </style>
+</head>
+<body class="bg-slate-50 text-slate-800 flex flex-col min-h-screen">
+ 
+  <!-- TOP ANNOUNCEMENT BAR -->
+  <div class="bg-slate-900 text-white text-xs py-2 px-4 text-center flex justify-between items-center max-w-7xl mx-auto w-full">
+    <span><i class="fa-solid fa-bolt text-yellow-400 mr-1"></i> Actualizado diariamente con las mejores ofertas comprobadas</span>
+    <button onclick="toggleModal('tag-modal')" class="text-yellow-400 underline font-medium hover:text-yellow-300">
+      <i class="fa-solid fa-gear mr-1"></i>Configurar ID de Afiliado
+    </button>
+  </div>
+ 
+  <!-- HEADER / NAVBAR -->
+  <header class="bg-white border-b border-slate-200 sticky top-0 z-40 shadow-sm">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
+      <!-- Logo -->
+      <a href="#" class="flex items-center gap-2 text-2xl font-extrabold text-slate-900 tracking-tight">
+        <span class="bg-amber-400 text-slate-900 px-2 py-1 rounded-lg">Deals</span>Hub
+        <i class="fa-brands fa-amazon text-amber-500 text-xl"></i>
+      </a>
+ 
+      <!-- Search Bar -->
+      <div class="flex-1 max-w-md hidden md:block">
+        <div class="relative">
+          <input type="text" id="search-input" onkeyup="filterProducts()" placeholder="Buscar productos, marcas, ofertas..."
+            class="w-full pl-10 pr-4 py-2 border border-slate-300 rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-amber-500 focus:border-amber-500">
+          <i class="fa-solid fa-magnifying-glass absolute left-3.5 top-2.5 text-slate-400 text-sm"></i>
+        </div>
+      </div>
+ 
+      <!-- Actions -->
+      <div class="flex items-center gap-3">
+        <a href="#blog" class="text-sm font-medium text-slate-600 hover:text-amber-600 hidden sm:block">Guías y Blog</a>
+        <button onclick="toggleModal('tag-modal')" class="bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold px-3 py-2 rounded-lg flex items-center gap-1.5 transition">
+          <i class="fa-solid fa-tag text-amber-500"></i>
+          <span id="current-tag-label">Tag: default-21</span>
+        </button>
+      </div>
+    </div>
+  </header>
+ 
+  <!-- HERO BANNER -->
+  <section class="bg-gradient-to-r from-slate-900 via-slate-800 to-amber-950 text-white py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto text-center">
+      <span class="inline-block bg-amber-500/20 text-amber-400 text-xs font-semibold uppercase tracking-widest px-3 py-1 rounded-full mb-3 border border-amber-500/30">
+        Ofertas Destacadas en Amazon
+      </span>
+      <h1 class="text-3xl sm:text-5xl font-extrabold tracking-tight mb-4">
+        Las Mejores Recomendaciones al Mejor Precio
+      </h1>
+      <p class="text-slate-300 max-w-2xl mx-auto text-sm sm:text-base mb-8">
+        Analizamos miles de opiniones y comparamos precios para traer los productos top con valoraciones más altas de Amazon.
+      </p>
+ 
+      <!-- Category Badges -->
+      <div class="flex flex-wrap justify-center gap-2 max-w-3xl mx-auto">
+        <button onclick="filterCategory('all')" class="cat-btn bg-amber-500 text-slate-900 font-semibold px-4 py-1.5 rounded-full text-sm">Todos</button>
+        <button onclick="filterCategory('tech')" class="cat-btn bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-full text-sm border border-slate-700">Tecnología</button>
+        <button onclick="filterCategory('home')" class="cat-btn bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-full text-sm border border-slate-700">Hogar</button>
+        <button onclick="filterCategory('gaming')" class="cat-btn bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-full text-sm border border-slate-700">Gaming</button>
+        <button onclick="filterCategory('audio')" class="cat-btn bg-slate-800/80 hover:bg-slate-700 text-slate-200 px-4 py-1.5 rounded-full text-sm border border-slate-700">Audio</button>
+      </div>
+    </div>
+  </section>
+ 
+  <!-- MAIN PRODUCT GRID -->
+  <main class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-10 flex-grow">
+    
+    <div class="flex justify-between items-center mb-6">
+      <h2 class="text-xl font-bold text-slate-900 flex items-center gap-2">
+        <i class="fa-solid fa-fire text-amber-500"></i> Productos Recomendados
+      </h2>
+      <div class="text-xs text-slate-500" id="product-count">Mostrando 6 productos</div>
+    </div>
+ 
+    <!-- Product Grid -->
+    <div id="product-grid" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 gap-6">
+      <!-- Products render dynamically here -->
+    </div>
+  </main>
+ 
+  <!-- BLOG / BUYING GUIDES SECTION -->
+  <section id="blog" class="bg-white border-t border-slate-200 py-12 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto">
+      <h2 class="text-2xl font-bold text-slate-900 mb-6">Guías de Compra & Análisis</h2>
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+          <div class="h-40 bg-slate-200 flex items-center justify-center text-slate-400">
+            <i class="fa-solid fa-headphones text-4xl"></i>
+          </div>
+          <div class="p-4">
+            <span class="text-xs font-semibold text-amber-600 uppercase">Audio</span>
+            <h3 class="font-bold text-base text-slate-900 mt-1 mb-2">Los mejores auriculares con cancelación de ruido</h3>
+            <p class="text-xs text-slate-600 line-clamp-2">Comparamos autonomía, cancelación activa de ruido y comodidad para uso diario.</p>
+          </div>
+        </div>
+ 
+        <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+          <div class="h-40 bg-slate-200 flex items-center justify-center text-slate-400">
+            <i class="fa-solid fa-laptop text-4xl"></i>
+          </div>
+          <div class="p-4">
+            <span class="text-xs font-semibold text-amber-600 uppercase">Tecnología</span>
+            <h3 class="font-bold text-base text-slate-900 mt-1 mb-2">Portátiles para estudiantes en calidad-precio</h3>
+            <p class="text-xs text-slate-600 line-clamp-2">Selección de equipos ligeros con excelente rendimiento de batería.</p>
+          </div>
+        </div>
+ 
+        <div class="border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition">
+          <div class="h-40 bg-slate-200 flex items-center justify-center text-slate-400">
+            <i class="fa-solid fa-robot text-4xl"></i>
+          </div>
+          <div class="p-4">
+            <span class="text-xs font-semibold text-amber-600 uppercase">Hogar</span>
+            <h3 class="font-bold text-base text-slate-900 mt-1 mb-2">Aspiradores robot: ¿Vale la pena la inversión?</h3>
+            <p class="text-xs text-slate-600 line-clamp-2">Analizamos los modelos más vendidos con mapeo láser y base de vaciado.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+ 
+  <!-- AMAZON AFFILIATE LEGAL DISCLOSURE & FOOTER -->
+  <footer class="bg-slate-900 text-slate-400 text-xs py-8 px-4 sm:px-6 lg:px-8">
+    <div class="max-w-7xl mx-auto space-y-4">
+      <div class="p-4 bg-slate-800/60 rounded-lg border border-slate-800 text-slate-300 leading-relaxed">
+        <p class="font-semibold text-slate-200 mb-1"><i class="fa-solid fa-circle-info mr-1 text-amber-400"></i> Aviso Legal de Afiliación:</p>
+        En calidad de Afiliado de Amazon, este sitio web obtiene ingresos por las compras adscritas que cumplen los requisitos aplicables. Los precios y la disponibilidad de los productos pueden variar.
+      </div>
+      <div class="flex flex-col sm:flex-row justify-between items-center pt-4 border-t border-slate-800 gap-2">
+        <p>© 2026 DealsHub. Todos los derechos reservados.</p>
+        <div class="flex gap-4">
+          <a href="#" class="hover:text-white">Política de Privacidad</a>
+          <a href="#" class="hover:text-white">Aviso Legal</a>
+          <a href="#" class="hover:text-white">Contacto</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+ 
+  <!-- MODAL DE CONFIGURACIÓN DE TAG DE AFILIADO -->
+  <div id="tag-modal" class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm hidden flex items-center justify-center z-50 p-4">
+    <div class="bg-white rounded-2xl max-w-md w-full p-6 shadow-2xl">
+      <div class="flex justify-between items-center mb-4">
+        <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+          <i class="fa-solid fa-sliders text-amber-500"></i> Tu ID de Amazon Afiliados
+        </h3>
+        <button onclick="toggleModal('tag-modal')" class="text-slate-400 hover:text-slate-600">
+          <i class="fa-solid fa-xmark text-lg"></i>
+        </button>
+      </div>
+      <p class="text-xs text-slate-600 mb-4">
+        Introduce tu código de seguimiento (Tracking ID) asignado por Amazon (ej: <code class="bg-slate-100 px-1.5 py-0.5 rounded text-amber-700">miweb-21</code>). Todos los enlaces de los productos redirigirán con tu comisión.
+      </p>
+      <input type="text" id="affiliate-tag-input" placeholder="ej: miweb-21"
+        class="w-full px-3 py-2 border border-slate-300 rounded-lg text-sm mb-4 focus:ring-2 focus:ring-amber-500 focus:outline-none">
+      <div class="flex gap-2">
+        <button onclick="saveAffiliateTag()" class="w-full bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold py-2 rounded-lg text-sm transition">
+          Guardar y Aplicar
+        </button>
+      </div>
+    </div>
+  </div>
+ 
+  <!-- JAVASCRIPT LOGIC -->
+  <script>
+    // LISTADO DE PRODUCTOS (Reemplaza los ASINs y enlaces por los tuyos)
+    const products = [
+      {
+        id: 1,
+        title: "Sony WH-1000XM5 Auriculares Inalámbricos Canceling",
+        category: "audio",
+        asin: "B09Y2MYL5C",
+        price: 329.00,
+        originalPrice: 449.00,
+        rating: 4.7,
+        reviews: 3280,
+        badge: "Más Vendido",
+        image: "https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=500&q=80",
+        description: "Cancelación de ruido líder en el sector, llamadas impecables y hasta 30h de batería."
+      },
+      {
+        id: 2,
+        title: "Apple 2024 MacBook Air 13'' con Chip M3",
+        category: "tech",
+        asin: "B0CX23V6X5",
+        price: 1199.00,
+        originalPrice: 1299.00,
+        rating: 4.8,
+        reviews: 950,
+        badge: "Top Valoración",
