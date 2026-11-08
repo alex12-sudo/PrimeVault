@@ -47,7 +47,7 @@
             <button onclick="filtrar('todos')" class="active">Todos</button>
             <button onclick="filtrar('tech')">Tecnología</button>
             <button onclick="filtrar('hogar')">Hogar</button>
-            <button class="btn-admin" onclick="toggleAdmin()">⚙️ Panel Admin</button>
+            <button class="btn-admin" onclick="pedirPassword()">⚙️ Panel Admin</button>
         </nav>
     </header>
  
@@ -105,8 +105,11 @@
     <script>
         // CONFIGURA AQUÍ TU TAG DE AFILIADO DE AMAZON
         const AFILIADO_TAG = "alex12su-21";
+        
+        // CONTRASEÑA DE ADMINISTRADOR (Puedes cambiar "tu_clave_secreta" por la que quieras)
+        const ADMIN_PASSWORD = "101-6ax*&
+ ";
  
-        // Productos iniciales por defecto
         const defaultProds = [
             {
                 id: 1,
@@ -159,10 +162,15 @@
             });
         }
  
-        function toggleAdmin() {
-            const panel = document.getElementById('adminPanel');
-            document.body.classList.toggle('admin-active');
-            panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+        function pedirPassword() {
+            const clave = prompt("Introduce la contraseña de Administrador:");
+            if (clave === ADMIN_PASSWORD) {
+                const panel = document.getElementById('adminPanel');
+                document.body.classList.toggle('admin-active');
+                panel.style.display = panel.style.display === 'block' ? 'none' : 'block';
+            } else if (clave !== null) {
+                alert("Contraseña incorrecta");
+            }
         }
  
         function guardarProducto() {
@@ -182,7 +190,6 @@
             localStorage.setItem('pv_prods', JSON.stringify(productos));
             render();
  
-            // Limpiar inputs
             document.getElementById('pTitle').value = '';
             document.getElementById('pAsin').value = '';
             document.getElementById('pPrice').value = '';
@@ -190,9 +197,11 @@
         }
  
         function eliminar(id) {
-            productos = productos.filter(p => p.id !== id);
-            localStorage.setItem('pv_prods', JSON.stringify(productos));
-            render();
+            if (confirm("¿Seguro que quieres borrar este producto?")) {
+                productos = productos.filter(p => p.id !== id);
+                localStorage.setItem('pv_prods', JSON.stringify(productos));
+                render();
+            }
         }
  
         function filtrar(cat) {
