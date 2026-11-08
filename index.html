@@ -46,10 +46,10 @@
     <header>
         <div class="logo">PrimeVault</div>
         <nav>
-            <button id="btn-todos" onclick="window.filtrar('todos')" class="active">Todos</button>
-            <button id="btn-tech" onclick="window.filtrar('tech')">Tecnología</button>
-            <button id="btn-hogar" onclick="window.filtrar('hogar')">Hogar</button>
-            <button class="btn-admin" onclick="window.pedirPassword()">⚙️ Panel Admin</button>
+            <button id="btn-todos" onclick="filtrar('todos')" class="active">Todos</button>
+            <button id="btn-tech" onclick="filtrar('tech')">Tecnología</button>
+            <button id="btn-hogar" onclick="filtrar('hogar')">Hogar</button>
+            <button class="btn-admin" onclick="pedirPassword()">⚙️ Panel Admin</button>
         </nav>
     </header>
  
@@ -96,7 +96,7 @@
                         <option value="true">Sí (Vídeo MP4)</option>
                     </select>
                 </div>
-                <button class="btn-save" type="button" onclick="window.guardarProducto()">+ Añadir a la Web</button>
+                <button class="btn-save" type="button" onclick="guardarProducto()">+ Añadir a la Web</button>
             </div>
         </div>
  
@@ -164,7 +164,7 @@
  
                 grid.innerHTML += `
                     <div class="card">
-                        <button class="btn-del" onclick="window.eliminar(${p.id})">✕</button>
+                        <button class="btn-del" onclick="eliminar(${p.id})">✕</button>
                         ${mediaHTML}
                         <div class="card-content">
                             ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
@@ -180,7 +180,7 @@
             });
         }
  
-        window.pedirPassword = function() {
+        function pedirPassword() {
             const clave = prompt("Introduce la contraseña de Administrador:");
             if (clave === ADMIN_PASSWORD) {
                 const panel = document.getElementById('adminPanel');
@@ -190,9 +190,9 @@
             } else if (clave !== null) {
                 alert("Contraseña incorrecta");
             }
-        };
+        }
  
-        window.guardarProducto = function() {
+        function guardarProducto() {
             const title = document.getElementById('pTitle').value;
             const cat = document.getElementById('pCat').value;
             const asin = document.getElementById('pAsin').value;
@@ -226,4 +226,5 @@
             render();
  
             document.getElementById('pTitle').value = '';
-            document
+            document.getElementById('pAsin').value = '';
+            document.get
