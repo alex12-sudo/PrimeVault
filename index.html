@@ -14,9 +14,9 @@
         nav button { background: #334155; border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
         nav button.active { background: #f59e0b; color: black; font-weight: bold; }
         .btn-admin { background: #2563eb !important; color: white !important; font-weight: bold; }
- 
+
         .container { max-width: 1100px; margin: 2rem auto; padding: 0 1rem; }
- 
+
         /* Panel Admin */
         #adminPanel { background: #1e293b; border: 2px solid #2563eb; border-radius: 8px; padding: 1.5rem; margin-bottom: 2rem; display: none; }
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
@@ -24,7 +24,7 @@
         .form-group label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.3rem; }
         .form-group input, .form-group select { background: #0f172a; border: 1px solid #334155; color: white; padding: 0.6rem; border-radius: 4px; }
         .btn-save { background: #10b981; color: white; font-weight: bold; border: none; padding: 0.7rem; border-radius: 6px; cursor: pointer; grid-column: 1 / -1; margin-top: 1rem; }
- 
+
         /* Productos Grid */
         .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 1.5rem; }
         .card { background: #1e293b; border-radius: 8px; border: 1px solid #334155; overflow: hidden; display: flex; flex-direction: column; position: relative; }
@@ -42,17 +42,17 @@
     </style>
 </head>
 <body>
- 
+
     <header>
         <div class="logo">PrimeVault</div>
         <nav>
-            <button id="btn-todos" onclick="filtrar('todos')" class="active">Todos</button>
-            <button id="btn-tech" onclick="filtrar('tech')">Tecnología</button>
-            <button id="btn-hogar" onclick="filtrar('hogar')">Hogar</button>
-            <button class="btn-admin" onclick="pedirPassword()">⚙️ Panel Admin</button>
+            <button id="btn-todos" class="active" data-cat="todos">Todos</button>
+            <button id="btn-tech" data-cat="tech">Tecnología</button>
+            <button id="btn-hogar" data-cat="hogar">Hogar</button>
+            <button class="btn-admin" id="btnAdmin">⚙️ Panel Admin</button>
         </nav>
     </header>
- 
+
     <div class="container">
         <!-- Panel Administrador -->
         <div id="adminPanel">
@@ -96,19 +96,19 @@
                         <option value="true">Sí (Vídeo MP4)</option>
                     </select>
                 </div>
-                <button class="btn-save" type="button" onclick="guardarProducto()">+ Añadir a la Web</button>
+                <button class="btn-save" type="button" id="btnGuardar">+ Añadir a la Web</button>
             </div>
         </div>
- 
+
         <!-- Grid principal -->
         <div class="grid" id="grid"></div>
     </div>
- 
+
     <script>
         const AFILIADO_TAG = "alex12su-21";
         const ADMIN_PASSWORD = "mi_clave_1234";
         let categoriaActual = 'todos';
- 
+
         const listaBase = [
             {
                 id: 1,
@@ -122,7 +122,7 @@
                 isVideo: false
             }
         ];
- 
+
         function obtenerProductos() {
             let local = localStorage.getItem('pv_prods');
             if (!local) {
@@ -135,52 +135,67 @@
                 return listaBase;
             }
         }
- 
+
         function guardarEnStorage(prods) {
             localStorage.setItem('pv_prods', JSON.stringify(prods));
         }
- 
+
         function render() {
             const grid = document.getElementById('grid');
             if (!grid) return;
             grid.innerHTML = '';
- 
+
             const productos = obtenerProductos();
             const filtrados = productos.filter(p => categoriaActual === 'todos' || p.cat === categoriaActual);
- 
+
             if (filtrados.length === 0) {
                 grid.innerHTML = '<div class="empty-msg">No hay productos en esta categoría. Abre el Panel Admin para añadir ofertas.</div>';
                 return;
             }
- 
+
             filtrados.forEach(p => {
-                const link = p.asin && p.asin.startsWith('http')
-                    ? p.asin
+                const link = p.asin && p.asin.startsWith('http') 
+                    ? p.asin 
                     : `https://www.amazon.es/dp/${p.asin || 'B000000000'}?tag=${AFILIADO_TAG}`;
- 
-                const mediaHTML = p.isVideo
+
+                const mediaHTML = p.isVideo 
                     ? `<video class="card-media" controls><source src="${p.media}" type="video/mp4"></video>`
                     : `<img class="card-media" src="${p.media || ''}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Sin+Imagen'">`;
- 
-                grid.innerHTML += `
-                    <div class="card">
-                        <button class="btn-del" onclick="eliminar(${p.id})">✕</button>
-                        ${mediaHTML}
-                        <div class="card-content">
-                            ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
-                            <div class="title">${p.title}</div>
-                            <div class="price-container">
-                                <span class="price">${p.price} €</span>
-                                ${p.oldPrice ? `<span class="old-price">${p.oldPrice} €</span>` : ''}
-                            </div>
-                            <a href="${link}" target="_blank" class="btn-buy">Comprar en Amazon</a>
+
+                const card = document.createElement('div');
+                card.className = 'card';
+                card.innerHTML = `
+                    <button class="btn-del" data-id="${p.id}">✕</button>
+                    ${mediaHTML}
+                    <div class="card-content">
+                        ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
+                        <div class="title">${p.title}</div>
+                        <div class="price-container">
+                            <span class="price">${p.price} €</span>
+                            ${p.oldPrice ? `<span class="old-price">${p.oldPrice} €</span>` : ''}
                         </div>
+                        <a href="${link}" target="_blank" class="btn-buy">Comprar en Amazon</a>
                     </div>
                 `;
+                grid.appendChild(card);
+            });
+
+            // Asignar eventos de borrado de forma segura
+            document.querySelectorAll('.btn-del').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    const id = Number(e.target.getAttribute('data-id'));
+                    if (confirm("¿Seguro que quieres borrar este producto?")) {
+                        let productos = obtenerProductos();
+                        productos = productos.filter(p => p.id !== id);
+                        guardarEnStorage(productos);
+                        render();
+                    }
+                });
             });
         }
- 
-        function pedirPassword() {
+
+        // Eventos de botones principales de forma nativa (sin errores de onclick)
+        document.getElementById('btnAdmin').addEventListener('click', () => {
             const clave = prompt("Introduce la contraseña de Administrador:");
             if (clave === ADMIN_PASSWORD) {
                 const panel = document.getElementById('adminPanel');
@@ -190,9 +205,9 @@
             } else if (clave !== null) {
                 alert("Contraseña incorrecta");
             }
-        }
- 
-        function guardarProducto() {
+        });
+
+        document.getElementById('btnGuardar').addEventListener('click', () => {
             const title = document.getElementById('pTitle').value;
             const cat = document.getElementById('pCat').value;
             const asin = document.getElementById('pAsin').value;
@@ -201,12 +216,12 @@
             const badge = document.getElementById('pBadge').value;
             const media = document.getElementById('pMedia').value;
             const isVideo = document.getElementById('pIsVideo').value === 'true';
- 
+
             if (!title) {
                 alert("Por favor, pon al menos un título al producto.");
                 return;
             }
- 
+
             const nuevo = {
                 id: Date.now(),
                 title: title,
@@ -218,13 +233,42 @@
                 media: media,
                 isVideo: isVideo
             };
- 
+
             let productos = obtenerProductos();
             productos.unshift(nuevo);
             guardarEnStorage(productos);
             
             render();
- 
+
             document.getElementById('pTitle').value = '';
             document.getElementById('pAsin').value = '';
-            document.get
+            document.getElementById('pPrice').value = '';
+            document.getElementById('pOldPrice').value = '';
+            document.getElementById('pBadge').value = '';
+            document.getElementById('pMedia').value = '';
+            
+            alert("¡Producto añadido con éxito!");
+        });
+
+        // Configurar filtros de categoría
+        ['todos', 'tech', 'hogar'].forEach(cat => {
+            const btn = document.getElementById('btn-' + cat);
+            if (btn) {
+                btn.addEventListener('click', (e) => {
+                    categoriaActual = cat;
+                    document.querySelectorAll('nav button').forEach(b => {
+                        if (!b.classList.contains('btn-admin')) {
+                            b.classList.remove('active');
+                        }
+                    });
+                    e.target.classList.add('active');
+                    render();
+                });
+            }
+        });
+
+        // Carga inicial
+        render();
+    </script>
+</body>
+</html>
