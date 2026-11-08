@@ -108,7 +108,18 @@
         const AFILIADO_TAG = "alex12su-21";
         const ADMIN_PASSWORD = "mi_clave_1234";
  
-        let productos = JSON.parse(localStorage.getItem('pv_prods')) || [];
+        function obtenerProductos() {
+            try {
+                return JSON.parse(localStorage.getItem('pv_prods')) || [];
+            } catch(e) {
+                return [];
+            }
+        }
+ 
+        function guardarProductosEnStorage(prods) {
+            localStorage.setItem('pv_prods', JSON.stringify(prods));
+        }
+ 
         let categoriaActual = 'todos';
  
         function render() {
@@ -116,6 +127,7 @@
             if (!grid) return;
             grid.innerHTML = '';
             
+            const productos = obtenerProductos();
             const filtrados = categoriaActual === 'todos'
                 ? productos
                 : productos.filter(p => p.cat === categoriaActual);
@@ -126,13 +138,13 @@
             }
  
             filtrados.forEach(p => {
-                const link = p.asin.startsWith('http')
+                const link = p.asin && p.asin.startsWith('http')
                     ? p.asin
-                    : `https://www.amazon.es/dp/${p.asin}?tag=${AFILIADO_TAG}`;
+                    : `https://www.amazon.es/dp/${p.asin || 'B000000000'}?tag=${AFILIADO_TAG}`;
  
                 const mediaHTML = p.isVideo
                     ? `<video class="card-media" controls><source src="${p.media}" type="video/mp4"></video>`
-                    : `<img class="card-media" src="${p.media}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Sin+Imagen'">`;
+                    : `<img class="card-media" src="${p.media || ''}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Sin+Imagen'">`;
  
                 grid.innerHTML += `
                     <div class="card">
@@ -164,49 +176,53 @@
         }
  
         function guardarProducto() {
+            const title = document.getElementById('pTitle').value;
+            const cat = document.getElementById('pCat').value;
+            const asin = document.getElementById('pAsin').value;
+            const price = parseFloat(document.getElementById('pPrice').value);
+            const oldPrice = parseFloat(document.getElementById('pOldPrice').value);
+            const badge = document.getElementById('pBadge').value;
+            const media = document.getElementById('pMedia').value;
+            const isVideo = document.getElementById('pIsVideo').value === 'true';
+ 
             const nuevo = {
                 id: Date.now(),
-                title: document.getElementById('pTitle').value || 'Producto sin nombre',
-                cat: document.getElementById('pCat').value,
-                asin: document.getElementById('pAsin').value || 'B000000000',
-                price: parseFloat(document.getElementById('pPrice').value) || 0,
-                oldPrice: parseFloat(document.getElementById('pOldPrice').value) || null,
-                badge: document.getElementById('pBadge').value,
-                media: document.getElementById('pMedia').value,
-                isVideo: document.getElementById('pIsVideo').value === 'true'
+                title: title || 'Producto sin nombre',
+                cat: cat,
+                asin: asin || 'B000000000',
+                price: isNaN(price) ? 0 : price,
+                oldPrice: isNaN(oldPrice) ? null : oldPrice,
+                badge: badge,
+                media: media,
+                isVideo: isVideo
             };
  
+            let productos = obtenerProductos();
             productos.unshift(nuevo);
-            localStorage.setItem('pv_prods', JSON.stringify(productos));
+            guardarProductosEnStorage(productos);
+            
             render();
  
+            // Limpiar campos del formulario
             document.getElementById('pTitle').value = '';
             document.getElementById('pAsin').value = '';
             document.getElementById('pPrice').value = '';
             document.getElementById('pOldPrice').value = '';
             document.getElementById('pBadge').value = '';
             document.getElementById('pMedia').value = '';
+            
             alert("¡Producto añadido y guardado con éxito!");
         }
  
         function eliminar(id) {
             if (confirm("¿Seguro que quieres borrar este producto?")) {
+                let productos = obtenerProductos();
                 productos = productos.filter(p => p.id !== id);
-                localStorage.setItem('pv_prods', JSON.stringify(productos));
+                guardarProductosEnStorage(productos);
                 render();
             }
         }
  
         function filtrar(evt, cat) {
             categoriaActual = cat;
-            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
-            if (evt && evt.target) {
-                evt.target.classList.add('active');
-            }
-            render();
-        }
- 
-        render();
-    </script>
-</body>
-</html>
+            document.querySelectorAll('nav button').forEach(b => b.classList.remove('active')
