@@ -8,9 +8,9 @@
         * { box-sizing: border-box; margin: 0; padding: 0; }
         body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background: #0f172a; color: #f8fafc; padding-bottom: 3rem; }
         
-        header { background: #1e293b; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; }
+        header { background: #1e293b; padding: 1rem 2rem; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid #334155; flex-wrap: wrap; gap: 1rem; }
         .logo { font-size: 1.5rem; font-weight: bold; color: #f59e0b; }
-        nav { display: flex; gap: 0.5rem; align-items: center; }
+        nav { display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; }
         nav button { background: #334155; border: none; color: white; padding: 0.5rem 1rem; border-radius: 6px; cursor: pointer; }
         nav button.active { background: #f59e0b; color: black; font-weight: bold; }
         .btn-admin { background: #2563eb !important; color: white !important; font-weight: bold; }
@@ -22,7 +22,7 @@
         .form-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 1rem; margin-top: 1rem; }
         .form-group { display: flex; flex-direction: column; }
         .form-group label { font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.3rem; }
-        .form-group input, .form-group select { background: #0f172a; border: 1px solid #334155; color: white; padding: 0.5rem; border-radius: 4px; }
+        .form-group input, .form-group select { background: #0f172a; border: 1px solid #334155; color: white; padding: 0.6rem; border-radius: 4px; }
         .btn-save { background: #10b981; color: white; font-weight: bold; border: none; padding: 0.7rem; border-radius: 6px; cursor: pointer; grid-column: 1 / -1; margin-top: 1rem; }
  
         /* Productos Grid */
@@ -36,7 +36,7 @@
         .price { font-size: 1.3rem; font-weight: bold; color: #4ade80; }
         .old-price { font-size: 0.85rem; text-decoration: line-through; color: #94a3b8; margin-left: 0.5rem; }
         .btn-buy { background: #f59e0b; color: black; text-decoration: none; text-align: center; font-weight: bold; padding: 0.6rem; border-radius: 6px; display: block; margin-top: auto; }
-        .btn-del { position: absolute; top: 8px; right: 8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 26px; height: 26px; cursor: pointer; display: none; }
+        .btn-del { position: absolute; top: 8px; right: 8px; background: #ef4444; color: white; border: none; border-radius: 50%; width: 28px; height: 28px; cursor: pointer; display: none; font-weight: bold; }
         .admin-active .btn-del { display: block; }
         .empty-msg { grid-column: 1 / -1; text-align: center; color: #94a3b8; padding: 3rem; font-size: 1.1rem; }
     </style>
@@ -54,12 +54,12 @@
     </header>
  
     <div class="container">
-        <!-- Panel Administrador -->
+        <!-- Panel Administrador (Protegido por contraseña) -->
         <div id="adminPanel">
             <h3>Añadir Nuevo Producto o Vídeo</h3>
             <div class="form-grid">
                 <div class="form-group">
-                    <label>Título</label>
+                    <label>Título del Producto</label>
                     <input type="text" id="pTitle" placeholder="Ej: Cepillo Oral-B iO5">
                 </div>
                 <div class="form-group">
@@ -71,10 +71,10 @@
                 </div>
                 <div class="form-group">
                     <label>ASIN o Link de Amazon</label>
-                    <input type="text" id="pAsin" placeholder="B08B5B2QCZ">
+                    <input type="text" id="pAsin" placeholder="B08B5B2QCZ o enlace completo">
                 </div>
                 <div class="form-group">
-                    <label>Precio (€)</label>
+                    <label>Precio Actual (€)</label>
                     <input type="number" step="0.01" id="pPrice" placeholder="99.95">
                 </div>
                 <div class="form-group">
@@ -82,11 +82,11 @@
                     <input type="number" step="0.01" id="pOldPrice" placeholder="136.91">
                 </div>
                 <div class="form-group">
-                    <label>Etiqueta</label>
+                    <label>Etiqueta (Opcional)</label>
                     <input type="text" id="pBadge" placeholder="Oferta Flash">
                 </div>
                 <div class="form-group">
-                    <label>URL Imagen o Vídeo</label>
+                    <label>URL Imagen o Vídeo MP4</label>
                     <input type="text" id="pMedia" placeholder="https://... o enlace mp4">
                 </div>
                 <div class="form-group">
@@ -100,16 +100,17 @@
             </div>
         </div>
  
-        <!-- Grid de Productos -->
+        <!-- Cuadrícula de Productos -->
         <div class="grid" id="grid"></div>
     </div>
  
     <script>
+        // CONFIGURACIÓN
         const AFILIADO_TAG = "alex12su-21";
-        const ADMIN_PASSWORD = "mi_clave_1234";
- 
+        const ADMIN_PASSWORD = "mi_clave_1234"; // Cambia aquí tu contraseña si lo deseas
         let categoriaActual = 'todos';
  
+        // Obtener productos guardados
         function obtenerProductos() {
             try {
                 return JSON.parse(localStorage.getItem('pv_prods')) || [];
@@ -118,10 +119,12 @@
             }
         }
  
+        // Guardar productos en memoria
         function guardarProductosEnStorage(prods) {
             localStorage.setItem('pv_prods', JSON.stringify(prods));
         }
  
+        // Renderizar la tienda en pantalla
         function render() {
             const grid = document.getElementById('grid');
             if (!grid) return;
@@ -148,7 +151,7 @@
  
                 grid.innerHTML += `
                     <div class="card">
-                        <button class="btn-del" onclick="eliminar(${p.id})">✕</button>
+                        <button class="btn-del" onclick="eliminar(${p.id})" title="Borrar producto">✕</button>
                         ${mediaHTML}
                         <div class="card-content">
                             ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
@@ -164,17 +167,20 @@
             });
         }
  
+        // Sistema de contraseña para el panel de administración
         function pedirPassword() {
             const clave = prompt("Introduce la contraseña de Administrador:");
             if (clave === ADMIN_PASSWORD) {
                 const panel = document.getElementById('adminPanel');
-                document.body.classList.toggle('admin-active');
-                panel.style.display = (panel.style.display === 'block') ? 'none' : 'block';
+                const isHidden = panel.style.display === 'none' || panel.style.display === '';
+                panel.style.display = isHidden ? 'block' : 'none';
+                document.body.classList.toggle('admin-active', isHidden);
             } else if (clave !== null) {
                 alert("Contraseña incorrecta");
             }
         }
  
+        // Guardar nuevo producto desde el panel
         function guardarProducto() {
             const title = document.getElementById('pTitle').value;
             const cat = document.getElementById('pCat').value;
@@ -185,9 +191,14 @@
             const media = document.getElementById('pMedia').value;
             const isVideo = document.getElementById('pIsVideo').value === 'true';
  
+            if (!title) {
+                alert("Por lo menos escribe un título para el producto.");
+                return;
+            }
+ 
             const nuevo = {
                 id: Date.now(),
-                title: title || 'Producto sin nombre',
+                title: title,
                 cat: cat,
                 asin: asin || 'B000000000',
                 price: isNaN(price) ? 0 : price,
@@ -203,27 +214,10 @@
             
             render();
  
+            // Limpiar formulario
             document.getElementById('pTitle').value = '';
             document.getElementById('pAsin').value = '';
             document.getElementById('pPrice').value = '';
             document.getElementById('pOldPrice').value = '';
-            document.getElementById('pBadge').value = '';
-            document.getElementById('pMedia').value = '';
-            
-            alert("¡Producto añadido y guardado con éxito!");
-        }
- 
-        function eliminar(id) {
-            if (confirm("¿Seguro que quieres borrar este producto?")) {
-                let productos = obtenerProductos();
-                productos = productos.filter(p => p.id !== id);
-                guardarProductosEnStorage(productos);
-                render();
-            }
-        }
- 
-        function filtrar(cat) {
-            categoriaActual = cat;
-            document.querySelectorAll('nav button').forEach(b => {
-                if (!b.classList.contains('btn-admi
+      
  
