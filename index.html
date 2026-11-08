@@ -54,7 +54,7 @@
     </header>
  
     <div class="container">
-        <!-- Panel Administrador (Protegido por contraseña) -->
+        <!-- Panel Administrador -->
         <div id="adminPanel">
             <h3>Añadir Nuevo Producto o Vídeo</h3>
             <div class="form-grid">
@@ -71,7 +71,7 @@
                 </div>
                 <div class="form-group">
                     <label>ASIN o Link de Amazon</label>
-                    <input type="text" id="pAsin" placeholder="B08B5B2QCZ o enlace completo">
+                    <input type="text" id="pAsin" placeholder="B08B5B2QCZ">
                 </div>
                 <div class="form-group">
                     <label>Precio Actual (€)</label>
@@ -82,12 +82,12 @@
                     <input type="number" step="0.01" id="pOldPrice" placeholder="136.91">
                 </div>
                 <div class="form-group">
-                    <label>Etiqueta (Opcional)</label>
+                    <label>Etiqueta</label>
                     <input type="text" id="pBadge" placeholder="Oferta Flash">
                 </div>
                 <div class="form-group">
                     <label>URL Imagen o Vídeo MP4</label>
-                    <input type="text" id="pMedia" placeholder="https://... o enlace mp4">
+                    <input type="text" id="pMedia" placeholder="https://...">
                 </div>
                 <div class="form-group">
                     <label>¿Es Vídeo?</label>
@@ -100,124 +100,127 @@
             </div>
         </div>
  
-        <!-- Cuadrícula de Productos -->
+        <!-- Grid principal donde se pintan los productos -->
         <div class="grid" id="grid"></div>
     </div>
  
     <script>
-        // CONFIGURACIÓN
-        const AFILIADO_TAG = "alex12su-21";
-        const ADMIN_PASSWORD = "mi_clave_1234"; // Cambia aquí tu contraseña si lo deseas
-        let categoriaActual = 'todos';
+        var AFILIADO_TAG = "alex12su-21";
+        var ADMIN_PASSWORD = "mi_clave_1234";
+        var categoriaActual = 'todos';
  
-        // Obtener productos guardados
+        // Productos guardados de base para que CUALQUIER USUARIO los vea al entrar
+        var listaBase = [
+            {
+                id: 1,
+                title: "Cepillo Recargable Oral-B iO5",
+                cat: "hogar",
+                asin: "B08B5B2QCZ",
+                price: 99.95,
+                oldPrice: 136.91,
+                badge: "Oferta Flash",
+                media: "https://images.unsplash.com/photo-1559599101-f09722fb4948?w=500",
+                isVideo: false
+            }
+        ];
+ 
         function obtenerProductos() {
+            var local = localStorage.getItem('pv_prods');
+            if (!local) {
+                localStorage.setItem('pv_prods', JSON.stringify(listaBase));
+                return listaBase;
+            }
             try {
-                return JSON.parse(localStorage.getItem('pv_prods')) || [];
+                return JSON.parse(local);
             } catch(e) {
-                return [];
+                return listaBase;
             }
         }
  
-        // Guardar productos en memoria
-        function guardarProductosEnStorage(prods) {
+        function guardarEnStorage(prods) {
             localStorage.setItem('pv_prods', JSON.stringify(prods));
         }
  
-        // Renderizar la tienda en pantalla
         function render() {
-            const grid = document.getElementById('grid');
+            var grid = document.getElementById('grid');
             if (!grid) return;
             grid.innerHTML = '';
-            
-            const productos = obtenerProductos();
-            const filtrados = categoriaActual === 'todos' 
-                ? productos 
-                : productos.filter(p => p.cat === categoriaActual);
+ 
+            var productos = obtenerProductos();
+            var filtrados = [];
+ 
+            for (var i = 0; i < productos.length; i++) {
+                if (categoriaActual === 'todos' || productos[i].cat === categoriaActual) {
+                    filtrados.push(productos[i]);
+                }
+            }
  
             if (filtrados.length === 0) {
-                grid.innerHTML = `<div class="empty-msg">No hay productos añadidos todavía. Abre el Panel Admin para añadir el primero.</div>`;
+                grid.innerHTML = '<div class="empty-msg">No hay productos en esta categoría. Abre el Panel Admin para añadir ofertas.</div>';
                 return;
             }
  
-            filtrados.forEach(p => {
-                const link = p.asin && p.asin.startsWith('http') 
-                    ? p.asin 
-                    : `https://www.amazon.es/dp/${p.asin || 'B000000000'}?tag=${AFILIADO_TAG}`;
+            for (var j = 0; j < filtrados.length; j++) {
+                var p = filtrados[j];
+                var link = (p.asin && p.asin.indexOf('http') === 0)
+                    ? p.asin
+                    : 'https://www.amazon.es/dp/' + (p.asin || 'B000000000') + '?tag=' + AFILIADO_TAG;
  
-                const mediaHTML = p.isVideo 
-                    ? `<video class="card-media" controls><source src="${p.media}" type="video/mp4"></video>`
-                    : `<img class="card-media" src="${p.media || ''}" alt="${p.title}" onerror="this.src='https://via.placeholder.com/300x200?text=Sin+Imagen'">`;
+                var mediaHTML = p.isVideo
+                    ? '<video class="card-media" controls><source src="' + p.media + '" type="video/mp4"></video>'
+                    : '<img class="card-media" src="' + (p.media || '') + '" alt="' + p.title + '" onerror="this.src=\'https://via.placeholder.com/300x200?text=Sin+Imagen\'">';
  
-                grid.innerHTML += `
-                    <div class="card">
-                        <button class="btn-del" onclick="eliminar(${p.id})" title="Borrar producto">✕</button>
-                        ${mediaHTML}
-                        <div class="card-content">
-                            ${p.badge ? `<span class="badge">${p.badge}</span>` : ''}
-                            <div class="title">${p.title}</div>
-                            <div class="price-container">
-                                <span class="price">${p.price} €</span>
-                                ${p.oldPrice ? `<span class="old-price">${p.oldPrice} €</span>` : ''}
-                            </div>
-                            <a href="${link}" target="_blank" class="btn-buy">Comprar en Amazon</a>
-                        </div>
-                    </div>
-                `;
-            });
+                var badgeHTML = p.badge ? '<span class="badge">' + p.badge + '</span>' : '';
+                var oldPriceHTML = p.oldPrice ? '<span class="old-price">' + p.oldPrice + ' €</span>' : '';
+ 
+                grid.innerHTML +=
+                    '<div class="card">' +
+                        '<button class="btn-del" onclick="eliminar(' + p.id + ')">✕</button>' +
+                        mediaHTML +
+                        '<div class="card-content">' +
+                            badgeHTML +
+                            '<div class="title">' + p.title + '</div>' +
+                            '<div class="price-container">' +
+                                '<span class="price">' + p.price + ' €</span>' +
+                                oldPriceHTML +
+                            '</div>' +
+                            '<a href="' + link + '" target="_blank" class="btn-buy">Comprar en Amazon</a>' +
+                        '</div>' +
+                    '</div>';
+            }
         }
  
-        // Sistema de contraseña para el panel de administración
         function pedirPassword() {
-            const clave = prompt("Introduce la contraseña de Administrador:");
+            var clave = prompt("Introduce la contraseña de Administrador:");
             if (clave === ADMIN_PASSWORD) {
-                const panel = document.getElementById('adminPanel');
-                const isHidden = panel.style.display === 'none' || panel.style.display === '';
-                panel.style.display = isHidden ? 'block' : 'none';
-                document.body.classList.toggle('admin-active', isHidden);
+                var panel = document.getElementById('adminPanel');
+                var estaOculto = (panel.style.display === 'none' || panel.style.display === '');
+                panel.style.display = estaOculto ? 'block' : 'none';
+                if (estaOculto) {
+                    document.body.classList.add('admin-active');
+                } else {
+                    document.body.classList.remove('admin-active');
+                }
             } else if (clave !== null) {
                 alert("Contraseña incorrecta");
             }
         }
  
-        // Guardar nuevo producto desde el panel
         function guardarProducto() {
-            const title = document.getElementById('pTitle').value;
-            const cat = document.getElementById('pCat').value;
-            const asin = document.getElementById('pAsin').value;
-            const price = parseFloat(document.getElementById('pPrice').value);
-            const oldPrice = parseFloat(document.getElementById('pOldPrice').value);
-            const badge = document.getElementById('pBadge').value;
-            const media = document.getElementById('pMedia').value;
-            const isVideo = document.getElementById('pIsVideo').value === 'true';
+            var title = document.getElementById('pTitle').value;
+            var cat = document.getElementById('pCat').value;
+            var asin = document.getElementById('pAsin').value;
+            var price = parseFloat(document.getElementById('pPrice').value);
+            var oldPrice = parseFloat(document.getElementById('pOldPrice').value);
+            var badge = document.getElementById('pBadge').value;
+            var media = document.getElementById('pMedia').value;
+            var isVideo = document.getElementById('pIsVideo').value === 'true';
  
             if (!title) {
-                alert("Por lo menos escribe un título para el producto.");
+                alert("Por favor, pon al menos un título al producto.");
                 return;
             }
  
-            const nuevo = {
+            var nuevo = {
                 id: Date.now(),
-                title: title,
-                cat: cat,
-                asin: asin || 'B000000000',
-                price: isNaN(price) ? 0 : price,
-                oldPrice: isNaN(oldPrice) ? null : oldPrice,
-                badge: badge,
-                media: media,
-                isVideo: isVideo
-            };
- 
-            let productos = obtenerProductos();
-            productos.unshift(nuevo);
-            guardarProductosEnStorage(productos);
-            
-            render();
- 
-            // Limpiar formulario
-            document.getElementById('pTitle').value = '';
-            document.getElementById('pAsin').value = '';
-            document.getElementById('pPrice').value = '';
-            document.getElementById('pOldPrice').value = '';
-      
- 
+                title: ti
