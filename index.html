@@ -96,7 +96,7 @@
                         <option value="true">Sí (Vídeo MP4)</option>
                     </select>
                 </div>
-                <button class="btn-save" onclick="guardarProducto()">+ Añadir a la Web</button>
+                <button class="btn-save" type="button" onclick="guardarProducto()">+ Añadir a la Web</button>
             </div>
         </div>
  
@@ -106,9 +106,8 @@
  
     <script>
         const AFILIADO_TAG = "alex12su-21";
-        const ADMIN_PASSWORD = "mi_clave_1234"; // Cambia aquí tu contraseña si lo deseas
+        const ADMIN_PASSWORD = "mi_clave_1234";
  
-        // Si la memoria está vacía, arrancará limpio sin productos por defecto
         let productos = JSON.parse(localStorage.getItem('pv_prods')) || [];
         let categoriaActual = 'todos';
  
@@ -181,7 +180,6 @@
             localStorage.setItem('pv_prods', JSON.stringify(productos));
             render();
  
-            // Limpiar formulario tras guardar
             document.getElementById('pTitle').value = '';
             document.getElementById('pAsin').value = '';
             document.getElementById('pPrice').value = '';
